@@ -117,14 +117,14 @@ Resources:
             Action:
               - 'sts:AssumeRole'
       Path: /
-      Policies:
-        - PolicyName: DMSservicerole
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action: 's3:*'
-                Resource: '*'
+      # Policies:
+      #   - PolicyName: DMSservicerole
+      #     PolicyDocument:
+      #       Version: 2012-10-17
+      #       Statement:
+      #         - Effect: Allow
+      #           Action: 's3:*'
+      #           Resource: '*'
   # DMSReplicationInstance:
   #   Type: 'AWS::DMS::ReplicationInstance'
   #   Properties:
