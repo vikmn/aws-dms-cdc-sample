@@ -105,27 +105,27 @@ Resources:
       # Engine: sqlserver-ex
       DBSnapshotIdentifier: 'arn:aws:rds:us-east-1:638426169984:snapshot:sqlcustomer-snapshot-may28'
       DBSubnetGroupName: !Ref dbSubnetGroup
-  # DMSExecutionRole:
-  #   Type: 'AWS::IAM::Role'
-  #   Properties:
-  #     AssumeRolePolicyDocument:
-  #       Version: 2012-10-17
-  #       Statement:
-  #         - Effect: Allow
-  #           Principal:
-  #             Service:
-  #               - dms.amazonaws.com
-  #           Action:
-  #             - 'sts:AssumeRole'
-  #     Path: /
-  #     Policies:
-  #       - PolicyName: DMSservicerole
-  #         PolicyDocument:
-  #           Version: 2012-10-17
-  #           Statement:
-  #            - Effect: Allow
-  #               Action: 's3:*'
-  #               Resource: '*'
+  DMSExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - dms.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyName: DMSservicerole
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 's3:*'
+                Resource: '*'
   DMSReplicationInstance:
     Type: 'AWS::DMS::ReplicationInstance'
     Properties:
@@ -166,19 +166,19 @@ Resources:
     # DependsOn:
     #   - s32kinesis
     #   - LambdaInvokePermission
-  # DMSEndpointS3:
-  #   Type: 'AWS::DMS::Endpoint'
-  #   Properties:
-  #     EndpointType: target
-  #     EngineName: S3
-  #     ExtraConnectionAttributes: 'maxfilesize=102400'
-  #     S3Settings:
-  #       BucketName: !Ref TargetS3BucketName
-  #       ServiceAccessRoleArn: !GetAtt 
-  #         - DMSExecutionRole
-  #         - Arn
-  #   DependsOn:
-  #     - S3Bucket
+  DMSEndpointS3:
+    Type: 'AWS::DMS::Endpoint'
+    Properties:
+      EndpointType: target
+      EngineName: S3
+      ExtraConnectionAttributes: 'maxfilesize=102400'
+      S3Settings:
+        BucketName: !Ref TargetS3BucketName
+        ServiceAccessRoleArn: !GetAtt 
+          - DMSExecutionRole
+          - Arn
+    DependsOn:
+      - S3Bucket
   # s32kinesis:
   #   Type: 'AWS::Lambda::Function'
   #   Properties:
