@@ -10,9 +10,10 @@ Parameters:
       # - db.r3.8xlarge
     Description: The instance type to use for this test iteration.
     Type: String
-  # TargetS3BucketName:
-  #   Description: The S3 bucket name for DMS target
-  #   Type: String
+  TargetS3BucketName:
+    Default: kinesisbucketvikram
+    Description: The S3 bucket name for DMS target
+    Type: String
   # LambdaRuntime:
   #   Description: The Lambda runtime to use
   #   Type: String
@@ -117,14 +118,14 @@ Resources:
   #           Action:
   #             - 'sts:AssumeRole'
   #     Path: /
-      # Policies:
-      #   - PolicyName: DMSservicerole
-      #     PolicyDocument:
-      #       Version: 2012-10-17
-      #       Statement:
-      #        - Effect: Allow
-      #           Action: 's3:*'
-      #           Resource: '*'
+  #     Policies:
+  #       - PolicyName: DMSservicerole
+  #         PolicyDocument:
+  #           Version: 2012-10-17
+  #           Statement:
+  #            - Effect: Allow
+  #               Action: 's3:*'
+  #               Resource: '*'
   DMSReplicationInstance:
     Type: 'AWS::DMS::ReplicationInstance'
     Properties:
@@ -146,6 +147,38 @@ Resources:
       DatabaseName: CustomerDB
     DependsOn:
       - SQLDatabase
+  S3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      AccessControl: BucketOwnerFullControl
+      BucketName: !Ref TargetS3BucketName
+      # NotificationConfiguration:
+      #   LambdaConfigurations:
+      #     - Function: !GetAtt 
+      #         - s32kinesis
+      #         - Arn
+      #       Event: 's3:ObjectCreated:*'
+      #       Filter:
+      #         S3Key:
+      #           Rules:
+      #             - Name: prefix
+      #               Value: dbo/CustomerInformation
+    # DependsOn:
+    #   - s32kinesis
+    #   - LambdaInvokePermission
+  # DMSEndpointS3:
+  #   Type: 'AWS::DMS::Endpoint'
+  #   Properties:
+  #     EndpointType: target
+  #     EngineName: S3
+  #     ExtraConnectionAttributes: 'maxfilesize=102400'
+  #     S3Settings:
+  #       BucketName: !Ref TargetS3BucketName
+  #       ServiceAccessRoleArn: !GetAtt 
+  #         - DMSExecutionRole
+  #         - Arn
+  #   DependsOn:
+  #     - S3Bucket
   # s32kinesis:
   #   Type: 'AWS::Lambda::Function'
   #   Properties:
@@ -238,38 +271,6 @@ Resources:
   #       - ''
   #       - - 'arn:aws:s3:::'
   #         - !Ref TargetS3BucketName
-  # s3buketaskinesis:
-  #   Type: 'AWS::S3::Bucket'
-  #   DependsOn:
-  #     - s32kinesis
-  #     - LambdaInvokePermission
-  #   Properties:
-  #     AccessControl: BucketOwnerFullControl
-  #     BucketName: !Ref TargetS3BucketName
-  #     NotificationConfiguration:
-  #       LambdaConfigurations:
-  #         - Function: !GetAtt 
-  #             - s32kinesis
-  #             - Arn
-  #           Event: 's3:ObjectCreated:*'
-  #           Filter:
-  #             S3Key:
-  #               Rules:
-  #                 - Name: prefix
-  #                   Value: dbo/CustomerInformation
-  # DMSEndpointS3:
-  #   Type: 'AWS::DMS::Endpoint'
-  #   Properties:
-  #     EndpointType: target
-  #     EngineName: S3
-  #     ExtraConnectionAttributes: 'maxfilesize=102400'
-  #     S3Settings:
-  #       BucketName: !Ref TargetS3BucketName
-  #       ServiceAccessRoleArn: !GetAtt 
-  #         - DMSExecutionRole
-  #         - Arn
-  #   DependsOn:
-  #     - s3buketaskinesis
   # DMSTaskMigration:
   #   Type: 'AWS::DMS::ReplicationTask'
   #   Properties:
