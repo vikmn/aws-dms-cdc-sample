@@ -2,50 +2,46 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: 'AWS CloudFormation to set up CDC with DMS, Lambda and Kinesis'
 Parameters:
   DatabaseInstanceType:
-    Default: db.r3.8xlarge
+    Default: db.m4.xlarge
     AllowedValues:
+      - db.m4.xlarge
       - db.m4.2xlarge
-      - db.r3.4xlarge
-      - db.r3.8xlarge
+      # - db.r3.4xlarge
+      # - db.r3.8xlarge
     Description: The instance type to use for this test iteration.
     Type: String
-  TargetS3BucketName:
-    Description: The S3 bucket name for DMS target
-    Type: String
-  LambdaRuntime:
-    Description: The Lambda runtime to use
-    Type: String
-    Default: java8
-  HandlerName:
-    Description: The name of the lambda handler
-    Type: String
-    Default: com.amazonaws.lambda.demo.LambdaFunctionHandler
-  CodeS3Bucket:
-    Description: The name of the bucket that contains your Lambda ZIP code
-    Type: String
-  S3Keys32kinesis:
-    Description: The name of the first Lambda ZIP package
-    Type: String
-    Default: s32kinesis.zip
+  # TargetS3BucketName:
+  #   Description: The S3 bucket name for DMS target
+  #   Type: String
+  # LambdaRuntime:
+  #   Description: The Lambda runtime to use
+  #   Type: String
+  #   Default: java8
+  # HandlerName:
+  #   Description: The name of the lambda handler
+  #   Type: String
+  #   Default: com.amazonaws.lambda.demo.LambdaFunctionHandler
+  # CodeS3Bucket:
+  #   Description: The name of the bucket that contains your Lambda ZIP code
+  #   Type: String
+  # S3Keys32kinesis:
+  #   Description: The name of the first Lambda ZIP package
+  #   Type: String
+  #   Default: s32kinesis.zip
   MasterUserPassword:
     NoEcho: true
+    Default: a1234567*
     Description: The master password for the DB instance.
     Type: String
-  S3Keyconsumekinesis:
-    Description: The name of the second Lambda ZIP package
-    Type: String
-    Default: consumekinesis.zip
+  # S3Keyconsumekinesis:
+  #   Description: The name of the second Lambda ZIP package
+  #   Type: String
+  #   Default: consumekinesis.zip
   ReplicationInstance:
-    Default: dms.c4.large
+    Default: dms.t2.micro
     AllowedValues:
       - dms.t2.micro
       - dms.t2.small
-      - dms.t2.medium
-      - dms.t2.large
-      - dms.c4.large
-      - dms.c4.xlarge
-      - dms.c4.2xlarge
-      - dms.c4.4xlarge
     Description: The instance type to use for the replication instance.
     Type: String
 Resources:
@@ -59,7 +55,7 @@ Resources:
       Tags:
       - Key: foo
         Value: bar
-  subnet1:
+  useast1a:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId:
@@ -69,7 +65,7 @@ Resources:
       Tags:
       - Key: foo
         Value: bar
-  subnet2:
+  useast1b:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId:
@@ -79,7 +75,7 @@ Resources:
       Tags:
       - Key: foo
         Value: bar
-  subnet3:
+  useast1c:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId:
@@ -89,14 +85,14 @@ Resources:
       Tags:
       - Key: foo
         Value: bar
-  myDBSubnetGroup: 
+  dbSubnetGroup: 
     Type: "AWS::RDS::DBSubnetGroup"
     Properties: 
       DBSubnetGroupDescription: "description"
       SubnetIds: 
-        - !Ref subnet1
-        - !Ref subnet2
-        - !Ref subnet3
+        - !Ref useast1a
+        - !Ref useast1b
+        - !Ref useast1c
   SQLDatabase:
     Type: 'AWS::RDS::DBInstance'
     Properties:
@@ -105,8 +101,51 @@ Resources:
       CharacterSetName: String
       DBInstanceClass: !Ref DatabaseInstanceType
       MasterUserPassword: !Ref MasterUserPassword
+      # Engine: sqlserver-ex
       DBSnapshotIdentifier: 'arn:aws:rds:us-east-1:638426169984:snapshot:sqlcustomer-snapshot-may28'
-      DBSubnetGroupName: !Ref myDBSubnetGroup
+      DBSubnetGroupName: !Ref dbSubnetGroup
+  DMSExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - dms.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyName: DMSservicerole
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 's3:*'
+                Resource: '*'
+  # DMSReplicationInstance:
+  #   Type: 'AWS::DMS::ReplicationInstance'
+  #   Properties:
+  #     AllocatedStorage: 100
+  #     MultiAZ: false
+  #     PubliclyAccessible: false
+  #     ReplicationInstanceClass: !Ref ReplicationInstance
+  #   DependsOn:
+  #     - DMSExecutionRole
+  # DMSEndpoint:
+  #   Type: 'AWS::DMS::Endpoint'
+  #   Properties:
+  #     EngineName: sqlserver
+  #     EndpointType: source
+  #     Username: AWSUser
+  #     Password: !Ref MasterUserPassword
+  #     ServerName: !Sub '${SQLDatabase.Endpoint.Address}'
+  #     Port: 1433
+  #     DatabaseName: CustomerDB
+  #   DependsOn:
+  #     - SQLDatabase
   # s32kinesis:
   #   Type: 'AWS::Lambda::Function'
   #   Properties:
@@ -218,46 +257,6 @@ Resources:
   #               Rules:
   #                 - Name: prefix
   #                   Value: dbo/CustomerInformation
-  # DMSReplicationInstance:
-  #   Type: 'AWS::DMS::ReplicationInstance'
-  #   Properties:
-  #     AllocatedStorage: 100
-  #     MultiAZ: false
-  #     PubliclyAccessible: false
-  #     ReplicationInstanceClass: !Ref ReplicationInstance
-  # DMSExecutionRole:
-  #   Type: 'AWS::IAM::Role'
-  #   Properties:
-  #     AssumeRolePolicyDocument:
-  #       Version: 2012-10-17
-  #       Statement:
-  #         - Effect: Allow
-  #           Principal:
-  #             Service:
-  #               - dms.amazonaws.com
-  #           Action:
-  #             - 'sts:AssumeRole'
-  #     Path: /
-  #     Policies:
-  #       - PolicyName: DMSservicerole
-  #         PolicyDocument:
-  #           Version: 2012-10-17
-  #           Statement:
-  #             - Effect: Allow
-  #               Action: 's3:*'
-  #               Resource: '*'
-  # DMSEndpoint:
-  #   Type: 'AWS::DMS::Endpoint'
-  #   Properties:
-  #     EngineName: sqlserver
-  #     EndpointType: source
-  #     Username: AWSUser
-  #     Password: !Ref MasterUserPassword
-  #     ServerName: !Sub '${SQLDatabase.Endpoint.Address}'
-  #     Port: 1433
-  #     DatabaseName: CustomerDB
-  #   DependsOn:
-  #     - SQLDatabase
   # DMSEndpointS3:
   #   Type: 'AWS::DMS::Endpoint'
   #   Properties:
