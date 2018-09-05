@@ -134,18 +134,18 @@ Resources:
       ReplicationInstanceClass: !Ref ReplicationInstance
     # DependsOn:
     #   - DMSExecutionRole
-  # DMSEndpoint:
-  #   Type: 'AWS::DMS::Endpoint'
-  #   Properties:
-  #     EngineName: sqlserver
-  #     EndpointType: source
-  #     Username: AWSUser
-  #     Password: !Ref MasterUserPassword
-  #     ServerName: !Sub '${SQLDatabase.Endpoint.Address}'
-  #     Port: 1433
-  #     DatabaseName: CustomerDB
-  #   DependsOn:
-  #     - SQLDatabase
+  DMSEndpoint:
+    Type: 'AWS::DMS::Endpoint'
+    Properties:
+      EngineName: sqlserver
+      EndpointType: source
+      Username: AWSUser
+      Password: !Ref MasterUserPassword
+      ServerName: !Sub '${SQLDatabase.Endpoint.Address}'
+      Port: 1433
+      DatabaseName: CustomerDB
+    DependsOn:
+      - SQLDatabase
   # s32kinesis:
   #   Type: 'AWS::Lambda::Function'
   #   Properties:
