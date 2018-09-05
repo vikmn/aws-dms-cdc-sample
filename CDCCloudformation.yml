@@ -104,36 +104,36 @@ Resources:
       # Engine: sqlserver-ex
       DBSnapshotIdentifier: 'arn:aws:rds:us-east-1:638426169984:snapshot:sqlcustomer-snapshot-may28'
       DBSubnetGroupName: !Ref dbSubnetGroup
-  DMSExecutionRole:
-    Type: 'AWS::IAM::Role'
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - dms.amazonaws.com
-            Action:
-              - 'sts:AssumeRole'
-      Path: /
+  # DMSExecutionRole:
+  #   Type: 'AWS::IAM::Role'
+  #   Properties:
+  #     AssumeRolePolicyDocument:
+  #       Version: 2012-10-17
+  #       Statement:
+  #         - Effect: Allow
+  #           Principal:
+  #             Service:
+  #               - dms.amazonaws.com
+  #           Action:
+  #             - 'sts:AssumeRole'
+  #     Path: /
       # Policies:
       #   - PolicyName: DMSservicerole
       #     PolicyDocument:
       #       Version: 2012-10-17
       #       Statement:
-      #         - Effect: Allow
+      #        - Effect: Allow
       #           Action: 's3:*'
       #           Resource: '*'
-  # DMSReplicationInstance:
-  #   Type: 'AWS::DMS::ReplicationInstance'
-  #   Properties:
-  #     AllocatedStorage: 100
-  #     MultiAZ: false
-  #     PubliclyAccessible: false
-  #     ReplicationInstanceClass: !Ref ReplicationInstance
-  #   DependsOn:
-  #     - DMSExecutionRole
+  DMSReplicationInstance:
+    Type: 'AWS::DMS::ReplicationInstance'
+    Properties:
+      AllocatedStorage: 100
+      MultiAZ: false
+      PubliclyAccessible: false
+      ReplicationInstanceClass: !Ref ReplicationInstance
+    # DependsOn:
+    #   - DMSExecutionRole
   # DMSEndpoint:
   #   Type: 'AWS::DMS::Endpoint'
   #   Properties:
