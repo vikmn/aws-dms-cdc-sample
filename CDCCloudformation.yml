@@ -55,9 +55,9 @@ Resources:
   myVPC:
     Type: AWS::EC2::VPC
     Properties:
-      CidrBlock: 172.32.0.0/16
-      EnableDnsSupport: 'true'
-      EnableDnsHostnames: 'true'
+      CidrBlock: 172.30.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
       InstanceTenancy: default
       Tags:
       - Key: foo
@@ -69,32 +69,32 @@ Resources:
         Ref: myVPC
       InternetGatewayId:
         Ref: myInternetGateway
-  useast1a:
+  subnet1:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId:
         Ref: myVPC
-      CidrBlock: 172.32.0.0/24
+      CidrBlock: 172.30.1.0/24
       AvailabilityZone: "us-east-1a"
       Tags:
       - Key: foo
         Value: bar
-  useast1b:
+  subnet2:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId:
         Ref: myVPC
-      CidrBlock: 172.32.16.0/24
+      CidrBlock: 172.30.2.0/24
       AvailabilityZone: "us-east-1b"
       Tags:
       - Key: foo
         Value: bar
-  useast1c:
+  subnet3:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId:
         Ref: myVPC
-      CidrBlock: 172.32.32.0/24
+      CidrBlock: 172.30.3.0/24
       AvailabilityZone: "us-east-1c"
       Tags:
       - Key: foo
@@ -104,9 +104,9 @@ Resources:
     Properties: 
       DBSubnetGroupDescription: "description"
       SubnetIds: 
-        - !Ref useast1a
-        - !Ref useast1b
-        - !Ref useast1c
+        - !Ref subnet1
+        - !Ref subnet2
+        - !Ref subnet3
   SQLDatabase:
     Type: 'AWS::RDS::DBInstance'
     Properties:
@@ -115,6 +115,7 @@ Resources:
       CharacterSetName: String
       DBInstanceClass: !Ref DatabaseInstanceType
       MasterUserPassword: !Ref MasterUserPassword
+      PubliclyAccessible: true
       # Engine: sqlserver-ex
       DBSnapshotIdentifier: 'arn:aws:rds:us-east-1:638426169984:snapshot:sqlcustomer-snapshot-may28'
       DBSubnetGroupName: !Ref dbSubnetGroup
