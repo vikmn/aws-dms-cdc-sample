@@ -107,6 +107,17 @@ Resources:
         - !Ref subnet1
         - !Ref subnet2
         - !Ref subnet3
+  DMSReplicationSubnetGroup:
+    Type: AWS::DMS::ReplicationSubnetGroup
+    Properties:
+      ReplicationSubnetGroupDescription: "description"
+      SubnetIds:
+        - !Ref subnet1
+        - !Ref subnet2
+        - !Ref subnet3
+      Tags:
+        - Key: foo
+          Value: bar
   SQLDatabase:
     Type: 'AWS::RDS::DBInstance'
     Properties:
@@ -147,6 +158,7 @@ Resources:
       MultiAZ: false
       PubliclyAccessible: false
       ReplicationInstanceClass: !Ref ReplicationInstance
+      ReplicationSubnetGroupIdentifier: !Ref DMSReplicationSubnetGroup
     # DependsOn:
     #   - DMSExecutionRole
   DMSEndpoint:
