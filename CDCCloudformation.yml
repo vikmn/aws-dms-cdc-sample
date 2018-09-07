@@ -308,18 +308,10 @@ Resources:
   #       - ''
   #       - - 'arn:aws:s3:::'
   #         - !Ref TargetS3BucketName
-  # DMSTaskMigration:
-  #   Type: 'AWS::DMS::ReplicationTask'
-  #   Properties:
-  #     MigrationType: full-load-and-cdc
-  #     ReplicationInstanceArn: !Ref DMSReplicationInstance
-  #     SourceEndpointArn: !Ref DMSEndpoint
-  #     TableMappings: >-
-  #       {"rules": [{"rule-type": "selection", "rule-id": "1", "rule-action":
-  #       "include", "object-locator": {"schema-name": "%", "table-name": "%"},
-  #       "rule-name": "1"}]}
-  #     TargetEndpointArn: !Ref DMSEndpointS3
-# Outputs:
-#   SQLDatabaseEndpoint:
-#     Description: Database endpoint
-#     Value: !Sub '${SQLDatabase.Endpoint.Address}:${SQLDatabase.Endpoint.Port}'
+Outputs:
+  SQLDatabaseEndpoint:
+    Description: Database endpoint
+    Value: !Sub '${SQLDatabase.Endpoint.Address}:${SQLDatabase.Endpoint.Port}'
+  S3Bucket:
+    Description: S3 bucket Name
+    Value: !Ref TargetS3BucketName
