@@ -11,7 +11,7 @@ Parameters:
     Description: The instance type to use for this test iteration.
     Type: String
   TargetS3BucketName:
-    Default: kinesisbucketvikram
+    Default: customer-data-vn
     Description: The S3 bucket name for DMS target
     Type: String
   # LambdaRuntime:
@@ -69,6 +69,23 @@ Resources:
         Ref: myVPC
       InternetGatewayId:
         Ref: myInternetGateway
+  myRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: myVPC
+      Tags:
+      - Key: foo
+        Value: bar
+  myRoute:
+    Type: AWS::EC2::Route
+    DependsOn: myInternetGateway
+    Properties:
+      RouteTableId:
+        Ref: myRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: myInternetGateway  
   subnet1:
     Type: AWS::EC2::Subnet
     Properties:
@@ -102,7 +119,7 @@ Resources:
   dbSubnetGroup: 
     Type: "AWS::RDS::DBSubnetGroup"
     Properties: 
-      DBSubnetGroupDescription: "description"
+      DBSubnetGroupDescription: "Subnet group for database"
       SubnetIds: 
         - !Ref subnet1
         - !Ref subnet2
@@ -110,7 +127,7 @@ Resources:
   DMSReplicationSubnetGroup:
     Type: AWS::DMS::ReplicationSubnetGroup
     Properties:
-      ReplicationSubnetGroupDescription: "description"
+      ReplicationSubnetGroupDescription: "subnet group for replication"
       SubnetIds:
         - !Ref subnet1
         - !Ref subnet2
@@ -118,9 +135,21 @@ Resources:
       Tags:
         - Key: foo
           Value: bar
+  SQLServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref myVPC
+      GroupDescription: SQL Server Security Group
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '1433'
+        ToPort: '1433'
+        CidrIp: 0.0.0.0/0
   SQLDatabase:
     Type: 'AWS::RDS::DBInstance'
     Properties:
+      VPCSecurityGroups:
+        - !Ref SQLServerSecurityGroup
       AutoMinorVersionUpgrade: false
       BackupRetentionPeriod: 1
       CharacterSetName: String
