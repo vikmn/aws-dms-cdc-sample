@@ -1,0 +1,13 @@
+version: "3"
+services:
+  aws-sam:
+    stdin_open: false
+    tty: true
+    working_dir: C:\code\aws-dms-cdc-sample\lambda-functions
+    build: .
+    # volumes:
+    #   - C:\code\aws-dms-cdc-sample\lambda-functions:/functions:rw
+    networks:
+      - webnet
+networks:
+  webnet:

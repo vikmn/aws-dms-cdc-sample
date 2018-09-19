@@ -17,3 +17,7 @@ Update-CFNStack -StackName CDCExperimental -TemplateBody (Get-Content -Path .\CD
 
 New-IAMRole -RoleName dms-vpc-role -AssumeRolePolicyDocument (Get-Content -raw .\dmsAssumeRolePolicy.json)
 Register-IAMRolePolicy -RoleName dms-vpc-role -PolicyArn arn:aws:iam::aws:policy/service-role/AmazonDMSVPCManagementRole
+
+docker rm aws-sam
+docker image build --tag vikmn/aws-sam .
+docker run -i -t --name aws-sam -v c:\code\aws-dms-cdc-sample\lambda-functions:c:\functions vikmn/aws-sam
