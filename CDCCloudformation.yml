@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: 'AWS CloudFormation to set up CDC with DMS, Lambda and Kinesis'
+Description: 'AWS CloudFormation to set up CDC with DMS'
 Parameters:
   DatabaseInstanceType:
     Default: db.m4.xlarge
@@ -14,30 +14,11 @@ Parameters:
     Default: customer-data-vn
     Description: The S3 bucket name for DMS target
     Type: String
-  # LambdaRuntime:
-  #   Description: The Lambda runtime to use
-  #   Type: String
-  #   Default: java8
-  # HandlerName:
-  #   Description: The name of the lambda handler
-  #   Type: String
-  #   Default: com.amazonaws.lambda.demo.LambdaFunctionHandler
-  # CodeS3Bucket:
-  #   Description: The name of the bucket that contains your Lambda ZIP code
-  #   Type: String
-  # S3Keys32kinesis:
-  #   Description: The name of the first Lambda ZIP package
-  #   Type: String
-  #   Default: s32kinesis.zip
   MasterUserPassword:
     NoEcho: true
     Default: a1234567*
     Description: The master password for the DB instance.
     Type: String
-  # S3Keyconsumekinesis:
-  #   Description: The name of the second Lambda ZIP package
-  #   Type: String
-  #   Default: consumekinesis.zip
   ReplicationInstance:
     Default: dms.t2.micro
     AllowedValues:
@@ -207,20 +188,6 @@ Resources:
     Properties:
       AccessControl: BucketOwnerFullControl
       BucketName: !Ref TargetS3BucketName
-      # NotificationConfiguration:
-      #   LambdaConfigurations:
-      #     - Function: !GetAtt 
-      #         - s32kinesis
-      #         - Arn
-      #       Event: 's3:ObjectCreated:*'
-      #       Filter:
-      #         S3Key:
-      #           Rules:
-      #             - Name: prefix
-      #               Value: dbo/CustomerInformation
-    # DependsOn:
-    #   - s32kinesis
-    #   - LambdaInvokePermission
   DMSEndpointS3:
     Type: 'AWS::DMS::Endpoint'
     Properties:
@@ -245,98 +212,6 @@ Resources:
         "include", "object-locator": {"schema-name": "%", "table-name": "%"},
         "rule-name": "1"}]}
       TargetEndpointArn: !Ref DMSEndpointS3
-  # s32kinesis:
-  #   Type: 'AWS::Lambda::Function'
-  #   Properties:
-  #     Code:
-  #       S3Bucket: !Ref CodeS3Bucket
-  #       S3Key: !Ref S3Keys32kinesis
-  #     Handler: !Ref HandlerName
-  #     FunctionName: s32kinesis
-  #     Role: !GetAtt 
-  #       - LambdaExecutionRole
-  #       - Arn
-  #     Runtime: !Ref LambdaRuntime
-  #     Timeout: '300'
-  #     MemorySize: '1024'
-  #     Environment:
-  #       Variables:
-  #         KinesisStream: testkinesisstream
-  # consumekinesis:
-  #   Type: 'AWS::Lambda::Function'
-  #   Properties:
-  #     Handler: !Ref HandlerName
-  #     FunctionName: consumekinesis
-  #     Role: !GetAtt 
-  #       - LambdaExecutionRole
-  #       - Arn
-  #     Code:
-  #       S3Bucket: !Ref CodeS3Bucket
-  #       S3Key: !Ref S3Keyconsumekinesis
-  #     Runtime: !Ref LambdaRuntime
-  #     Timeout: '300'
-  #     MemorySize: '1024'
-  # LambdaExecutionRole:
-  #   Type: 'AWS::IAM::Role'
-  #   Properties:
-  #     AssumeRolePolicyDocument:
-  #       Version: 2012-10-17
-  #       Statement:
-  #         - Effect: Allow
-  #           Principal:
-  #             Service:
-  #               - lambda.amazonaws.com
-  #           Action:
-  #             - 'sts:AssumeRole'
-  #     Path: /
-  #     Policies:
-  #       - PolicyName: root
-  #         PolicyDocument:
-  #           Version: 2012-10-17
-  #           Statement:
-  #             - Effect: Allow
-  #               Action:
-  #                 - 'logs:CreateLogGroup'
-  #                 - 'logs:CreateLogStream'
-  #                 - 'logs:PutLogEvents'
-  #               Resource: 'arn:aws:logs:*:*:*'
-  #             - Effect: Allow
-  #               Action:
-  #                 - 's3:GetObject'
-  #                 - 's3:PutObject'
-  #               Resource:
-  #                 - 'arn:aws:s3:::*'
-  #             - Effect: Allow
-  #               Action: 'kinesis:*'
-  #               Resource: '*'
-  # testkinesisstream:
-  #   Type: 'AWS::Kinesis::Stream'
-  #   Properties:
-  #     Name: testkinesisstream
-  #     ShardCount: 1
-  # testkinesisstreamEventSource:
-  #   Type: 'AWS::Lambda::EventSourceMapping'
-  #   Properties:
-  #     FunctionName: !Ref consumekinesis
-  #     Enabled: true
-  #     EventSourceArn: !GetAtt 
-  #       - testkinesisstream
-  #       - Arn
-  #     StartingPosition: LATEST
-  # LambdaInvokePermission:
-  #   Type: 'AWS::Lambda::Permission'
-  #   DependsOn:
-  #     - s32kinesis
-  #   Properties:
-  #     Action: 'lambda:InvokeFunction'
-  #     FunctionName: !GetAtt 
-  #       - s32kinesis
-  #       - Arn
-  #     Principal: s3.amazonaws.com
-  #     SourceArn: !Join 
-  #       - ''
-  #       - - 'arn:aws:s3:::'
-  #         - !Ref TargetS3BucketName
 Outputs:
   SQLDatabaseEndpoint:
     Description: Database endpoint
