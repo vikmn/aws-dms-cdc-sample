@@ -157,13 +157,32 @@ Resources:
               - 'sts:AssumeRole'
       Path: /
       Policies:
-        - PolicyName: DMSservicerole
+        - PolicyName: s3AccessPolicy
           PolicyDocument:
             Version: 2012-10-17
             Statement:
               - Effect: Allow
                 Action: 's3:*'
                 Resource: '*'
+        - PolicyName: dynamoReadPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 'dynamodb:ListTables'
+                Resource: '*'
+        # - PolicyName: dynamoModifyPolicy
+        #   PolicyDocument:
+        #     Version: 2012-10-17
+        #     Statement:
+        #       - Effect: Allow
+        #         Action:
+        #           - 'dynamodb:PutItem'
+        #           - 'dynamodb:CreateTable'
+        #           - 'dynamodb:DescribeTable'
+        #           - 'dynamodb:DeleteTable'
+        #           - 'dynamodb:DeleteItem'
+        #         Resource: '*'
   DMSReplicationInstance:
     Type: 'AWS::DMS::ReplicationInstance'
     Properties:
@@ -299,3 +318,6 @@ Outputs:
   S3Bucket:
     Description: S3 bucket Name
     Value: !Ref TargetS3BucketName
+  DynamoDb:
+    Description: dynamo db instance name
+    Value: 'test'
