@@ -135,7 +135,7 @@ Resources:
       AutoMinorVersionUpgrade: false
       BackupRetentionPeriod: 1
       DBInstanceClass: !Ref DatabaseInstanceType
-      MasterUsername: AWSUser
+      MasterUsername: admin
       MasterUserPassword: !Ref MasterUserPassword
       PubliclyAccessible: true
       Engine: sqlserver-ex
@@ -290,6 +290,17 @@ Resources:
     Properties:
       AccessControl: BucketOwnerFullControl
       BucketName: !Ref TargetS3BucketName
+  DMSEndpointDDB:
+    Type: 'AWS::DMS::Endpoint'
+    Properties:
+      EndpointType: target
+      EngineName: dynamodb
+      DynamoDbSettings:
+        ServiceAccessRoleArn: !GetAtt
+          - DMSExecutionRole
+          - Arn
+    DependsOn:
+      - myDynamoDBTable
   DMSEndpointS3:
     Type: 'AWS::DMS::Endpoint'
     Properties:
@@ -298,7 +309,7 @@ Resources:
       ExtraConnectionAttributes: 'maxfilesize=102400'
       S3Settings:
         BucketName: !Ref TargetS3BucketName
-        ServiceAccessRoleArn: !GetAtt 
+        ServiceAccessRoleArn: !GetAtt
           - DMSExecutionRole
           - Arn
     DependsOn:
