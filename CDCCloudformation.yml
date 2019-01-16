@@ -171,18 +171,21 @@ Resources:
               - Effect: Allow
                 Action: 'dynamodb:ListTables'
                 Resource: '*'
-        # - PolicyName: dynamoModifyPolicy
-        #   PolicyDocument:
-        #     Version: 2012-10-17
-        #     Statement:
-        #       - Effect: Allow
-        #         Action:
-        #           - 'dynamodb:PutItem'
-        #           - 'dynamodb:CreateTable'
-        #           - 'dynamodb:DescribeTable'
-        #           - 'dynamodb:DeleteTable'
-        #           - 'dynamodb:DeleteItem'
-        #         Resource: '*'
+        - PolicyName: dynamoModifyPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'dynamodb:PutItem'
+                  - 'dynamodb:CreateTable'
+                  - 'dynamodb:DescribeTable'
+                  - 'dynamodb:DeleteTable'
+                  - 'dynamodb:DeleteItem'
+                Resource:
+                  - !GetAtt
+                      - myDynamoDBTable
+                      - Arn
   DMSReplicationInstance:
     Type: 'AWS::DMS::ReplicationInstance'
     Properties:
