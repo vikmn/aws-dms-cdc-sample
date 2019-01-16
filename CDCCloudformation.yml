@@ -325,17 +325,19 @@ Resources:
         "include", "object-locator": {"schema-name": "%", "table-name": "%"},
         "rule-name": "1"}]}
       TargetEndpointArn: !Ref DMSEndpointS3
-  # DynamoDbMigration:
-  #   Type: 'AWS::DMS::ReplicationTask'
-  #   Properties:
-  #     MigrationType: full-load-and-cdc
-  #     ReplicationInstanceArn: !Ref DMSReplicationInstance
-  #     SourceEndpointArn: !Ref DMSEndpoint
-  #     TableMappings: >-
-  #       {"rules": [{"rule-type": "object-mapping", "rule-id": "1", "rule-action":
-  #       "map-record-to-record", "object-locator": {"schema-name": "%", "table-name": "tblRegions"},
-  #       "rule-name": "TransformToDDB"}]}
-  #     TargetEndpointArn: !Ref DMSEndpointDDB
+  DynamoDbMigration:
+    Type: 'AWS::DMS::ReplicationTask'
+    Properties:
+      MigrationType: full-load-and-cdc
+      ReplicationInstanceArn: !Ref DMSReplicationInstance
+      SourceEndpointArn: !Ref DMSEndpoint
+      TableMappings: >-
+        {"rules": [{"rule-type": "selection", "rule-id": "1", "rule-action":
+        "include", "object-locator": {"schema-name": "%", "table-name": "%"},
+        "rule-name": "1"},{"rule-type": "object-mapping", "rule-id": "2", "rule-action":
+        "map-record-to-record", "target-table-name": "tblRegions","object-locator": {"schema-name": "dbo", "table-name": "tblRegions"},
+        "rule-name": "TransformToDDB"}]}
+      TargetEndpointArn: !Ref DMSEndpointDDB
 Outputs:
   SQLDatabaseEndpoint:
     Description: Database endpoint
