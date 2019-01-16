@@ -2,8 +2,9 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: 'AWS CloudFormation to set up CDC with DMS'
 Parameters:
   DatabaseInstanceType:
-    Default: db.m4.xlarge
+    Default: db.t2.micro
     AllowedValues:
+      - db.t2.micro
       - db.m4.xlarge
       - db.m4.2xlarge
       # - db.r3.4xlarge
@@ -11,7 +12,7 @@ Parameters:
     Description: The instance type to use for this test iteration.
     Type: String
   TargetS3BucketName:
-    Default: customer-data-vn
+    Default: vikram-customer-data
     Description: The S3 bucket name for DMS target
     Type: String
   MasterUserPassword:
@@ -27,12 +28,6 @@ Parameters:
     Description: The instance type to use for the replication instance.
     Type: String
 Resources:
-  myInternetGateway:
-    Type: AWS::EC2::InternetGateway
-    Properties:
-      Tags:
-      - Key: foo
-        Value: bar
   myVPC:
     Type: AWS::EC2::VPC
     Properties:
@@ -40,6 +35,12 @@ Resources:
       EnableDnsSupport: true
       EnableDnsHostnames: true
       InstanceTenancy: default
+      Tags:
+      - Key: foo
+        Value: bar
+  myInternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
       Tags:
       - Key: foo
         Value: bar
@@ -73,7 +74,7 @@ Resources:
       VpcId:
         Ref: myVPC
       CidrBlock: 172.30.1.0/24
-      AvailabilityZone: "us-east-1a"
+      AvailabilityZone: "eu-west-2a"
       Tags:
       - Key: foo
         Value: bar
@@ -83,7 +84,7 @@ Resources:
       VpcId:
         Ref: myVPC
       CidrBlock: 172.30.2.0/24
-      AvailabilityZone: "us-east-1b"
+      AvailabilityZone: "eu-west-2b"
       Tags:
       - Key: foo
         Value: bar
@@ -93,7 +94,7 @@ Resources:
       VpcId:
         Ref: myVPC
       CidrBlock: 172.30.3.0/24
-      AvailabilityZone: "us-east-1c"
+      AvailabilityZone: "eu-west-2c"
       Tags:
       - Key: foo
         Value: bar
@@ -133,12 +134,14 @@ Resources:
         - !Ref SQLServerSecurityGroup
       AutoMinorVersionUpgrade: false
       BackupRetentionPeriod: 1
-      CharacterSetName: String
       DBInstanceClass: !Ref DatabaseInstanceType
+      MasterUsername: AWSUser
       MasterUserPassword: !Ref MasterUserPassword
       PubliclyAccessible: true
-      # Engine: sqlserver-ex
-      DBSnapshotIdentifier: 'arn:aws:rds:us-east-1:638426169984:snapshot:sqlcustomer-snapshot-may28'
+      Engine: sqlserver-ex
+      EngineVersion: 14.00.3015.40.v1
+      AllocatedStorage: 100
+      # DBSnapshotIdentifier: 'arn:aws:rds:eu-west-2:638426169984:snapshot:sqlcustomer-snapshot-may28'
       DBSubnetGroupName: !Ref dbSubnetGroup
   DMSExecutionRole:
     Type: 'AWS::IAM::Role'
@@ -183,6 +186,83 @@ Resources:
       DatabaseName: CustomerDB
     DependsOn:
       - SQLDatabase
+  # myDynamoDBTable: 
+  #   Type: AWS::DynamoDB::Table
+  #   Properties: 
+  #     AttributeDefinitions: 
+  #       - 
+  #         AttributeName: "Album"
+  #         AttributeType: "S"
+  #       - 
+  #         AttributeName: "Artist"
+  #         AttributeType: "S"
+  #       - 
+  #         AttributeName: "Sales"
+  #         AttributeType: "N"
+  #       - 
+  #         AttributeName: "NumberOfSongs"
+  #         AttributeType: "N"
+  #     KeySchema: 
+  #       - 
+  #         AttributeName: "Album"
+  #         KeyType: "HASH"
+  #       - 
+  #         AttributeName: "Artist"
+  #         KeyType: "RANGE"
+  #     ProvisionedThroughput: 
+  #       ReadCapacityUnits: "5"
+  #       WriteCapacityUnits: "5"
+  #     TableName: "myTableName"
+  #     GlobalSecondaryIndexes: 
+  #       - 
+  #         IndexName: "myGSI"
+  #         KeySchema: 
+  #           - 
+  #             AttributeName: "Sales"
+  #             KeyType: "HASH"
+  #           - 
+  #             AttributeName: "Artist"
+  #             KeyType: "RANGE"
+  #         Projection: 
+  #           NonKeyAttributes: 
+  #             - "Album"
+  #             - "NumberOfSongs"
+  #           ProjectionType: "INCLUDE"
+  #         ProvisionedThroughput: 
+  #           ReadCapacityUnits: "5"
+  #           WriteCapacityUnits: "5"
+  #       - 
+  #         IndexName: "myGSI2"
+  #         KeySchema: 
+  #           - 
+  #             AttributeName: "NumberOfSongs"
+  #             KeyType: "HASH"
+  #           - 
+  #             AttributeName: "Sales"
+  #             KeyType: "RANGE"
+  #         Projection: 
+  #           NonKeyAttributes: 
+  #             - "Album"
+  #             - "Artist"
+  #           ProjectionType: "INCLUDE"
+  #         ProvisionedThroughput: 
+  #           ReadCapacityUnits: "5"
+  #           WriteCapacityUnits: "5"
+  #     LocalSecondaryIndexes: 
+  #       - 
+  #         IndexName: "myLSI"
+  #         KeySchema: 
+  #           - 
+  #             AttributeName: "Album"
+  #             KeyType: "HASH"
+  #           - 
+  #             AttributeName: "Sales"
+  #             KeyType: "RANGE"
+  #         Projection: 
+  #           NonKeyAttributes: 
+  #             - "Artist"
+  #             - "NumberOfSongs"
+  #           ProjectionType: "INCLUDE"
   S3Bucket:
     Type: 'AWS::S3::Bucket'
     Properties:
