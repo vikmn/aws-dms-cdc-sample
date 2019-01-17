@@ -135,7 +135,7 @@ Resources:
       AutoMinorVersionUpgrade: false
       BackupRetentionPeriod: 1
       DBInstanceClass: !Ref DatabaseInstanceType
-      MasterUsername: admin
+      MasterUsername: vikram
       MasterUserPassword: !Ref MasterUserPassword
       PubliclyAccessible: true
       Engine: sqlserver-ex
@@ -201,11 +201,11 @@ Resources:
     Properties:
       EngineName: sqlserver
       EndpointType: source
-      Username: AWSUser
+      Username: vikram
       Password: !Ref MasterUserPassword
       ServerName: !Sub '${SQLDatabase.Endpoint.Address}'
       Port: 1433
-      DatabaseName: CustomerDB
+      DatabaseName: tariffs
     DependsOn:
       - SQLDatabase
   myDynamoDBTable: 
@@ -213,78 +213,30 @@ Resources:
     Properties: 
       AttributeDefinitions: 
         - 
-          AttributeName: "Album"
-          AttributeType: "S"
-        - 
-          AttributeName: "Artist"
-          AttributeType: "S"
-        - 
-          AttributeName: "Sales"
-          AttributeType: "N"
-        - 
-          AttributeName: "NumberOfSongs"
+          AttributeName: "RegionID"
           AttributeType: "N"
       KeySchema: 
         - 
-          AttributeName: "Album"
+          AttributeName: "RegionID"
           KeyType: "HASH"
-        - 
-          AttributeName: "Artist"
-          KeyType: "RANGE"
       ProvisionedThroughput: 
-        ReadCapacityUnits: "5"
-        WriteCapacityUnits: "5"
+        ReadCapacityUnits: "1"
+        WriteCapacityUnits: "1"
       TableName: "tblRegions"
       GlobalSecondaryIndexes: 
         - 
           IndexName: "myGSI"
           KeySchema: 
             - 
-              AttributeName: "Sales"
+              AttributeName: "RegionID"
               KeyType: "HASH"
-            - 
-              AttributeName: "Artist"
-              KeyType: "RANGE"
           Projection: 
             NonKeyAttributes: 
-              - "Album"
-              - "NumberOfSongs"
+              - "RegionName"
             ProjectionType: "INCLUDE"
           ProvisionedThroughput: 
             ReadCapacityUnits: "5"
             WriteCapacityUnits: "5"
-        - 
-          IndexName: "myGSI2"
-          KeySchema: 
-            - 
-              AttributeName: "NumberOfSongs"
-              KeyType: "HASH"
-            - 
-              AttributeName: "Sales"
-              KeyType: "RANGE"
-          Projection: 
-            NonKeyAttributes: 
-              - "Album"
-              - "Artist"
-            ProjectionType: "INCLUDE"
-          ProvisionedThroughput: 
-            ReadCapacityUnits: "5"
-            WriteCapacityUnits: "5"
-      LocalSecondaryIndexes: 
-        - 
-          IndexName: "myLSI"
-          KeySchema: 
-            - 
-              AttributeName: "Album"
-              KeyType: "HASH"
-            - 
-              AttributeName: "Sales"
-              KeyType: "RANGE"
-          Projection: 
-            NonKeyAttributes: 
-              - "Artist"
-              - "NumberOfSongs"
-            ProjectionType: "INCLUDE"
   S3Bucket:
     Type: 'AWS::S3::Bucket'
     Properties:
@@ -333,7 +285,7 @@ Resources:
       SourceEndpointArn: !Ref DMSEndpoint
       TableMappings: >-
         {"rules": [{"rule-type": "selection", "rule-id": "1", "rule-action":
-        "include", "object-locator": {"schema-name": "%", "table-name": "%"},
+        "include", "object-locator": {"schema-name": "%", "table-name": "tblRegions"},
         "rule-name": "1"},{"rule-type": "object-mapping", "rule-id": "2", "rule-action":
         "map-record-to-record", "target-table-name": "tblRegions","object-locator": {"schema-name": "dbo", "table-name": "tblRegions"},
         "rule-name": "TransformToDDB"}]}
@@ -347,4 +299,6 @@ Outputs:
     Value: !Ref TargetS3BucketName
   DynamoDb:
     Description: dynamo db instance name
-    Value: 'test'
+    Value: !GetAtt
+            - myDynamoDBTable
+            - Arn
