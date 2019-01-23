@@ -2,9 +2,10 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: 'AWS CloudFormation to set up CDC with DMS'
 Parameters:
   DatabaseInstanceType:
-    Default: db.t2.micro
+    Default: db.m4.xlarge
     AllowedValues:
       - db.t2.micro
+      - db.m4.large
       - db.m4.xlarge
       - db.m4.2xlarge
       # - db.r3.4xlarge
@@ -74,7 +75,7 @@ Resources:
       VpcId:
         Ref: myVPC
       CidrBlock: 172.30.1.0/24
-      AvailabilityZone: "eu-west-2a"
+      AvailabilityZone: "us-east-1a"
       Tags:
       - Key: foo
         Value: bar
@@ -84,7 +85,7 @@ Resources:
       VpcId:
         Ref: myVPC
       CidrBlock: 172.30.2.0/24
-      AvailabilityZone: "eu-west-2b"
+      AvailabilityZone: "us-east-1b"
       Tags:
       - Key: foo
         Value: bar
@@ -94,7 +95,7 @@ Resources:
       VpcId:
         Ref: myVPC
       CidrBlock: 172.30.3.0/24
-      AvailabilityZone: "eu-west-2c"
+      AvailabilityZone: "us-east-1c"
       Tags:
       - Key: foo
         Value: bar
@@ -134,14 +135,12 @@ Resources:
         - !Ref SQLServerSecurityGroup
       AutoMinorVersionUpgrade: false
       BackupRetentionPeriod: 1
+      CharacterSetName: String
       DBInstanceClass: !Ref DatabaseInstanceType
-      MasterUsername: vikram
       MasterUserPassword: !Ref MasterUserPassword
       PubliclyAccessible: true
-      Engine: sqlserver-ex
-      EngineVersion: 14.00.3015.40.v1
-      AllocatedStorage: 100
-      # DBSnapshotIdentifier: 'arn:aws:rds:eu-west-2:638426169984:snapshot:sqlcustomer-snapshot-may28'
+      # Engine: sqlserver-ex
+      DBSnapshotIdentifier: 'arn:aws:rds:us-east-1:638426169984:snapshot:sqlcustomer-snapshot-may28'
       DBSubnetGroupName: !Ref dbSubnetGroup
   DMSExecutionRole:
     Type: 'AWS::IAM::Role'
@@ -201,7 +200,7 @@ Resources:
     Properties:
       EngineName: sqlserver
       EndpointType: source
-      Username: vikram
+      Username: AWSUser
       Password: !Ref MasterUserPassword
       ServerName: !Sub '${SQLDatabase.Endpoint.Address}'
       Port: 1433
@@ -234,9 +233,9 @@ Resources:
             NonKeyAttributes: 
               - "RegionName"
             ProjectionType: "INCLUDE"
-          ProvisionedThroughput: 
-            ReadCapacityUnits: "5"
-            WriteCapacityUnits: "5"
+          ProvisionedThroughput:
+            ReadCapacityUnits: "1"
+            WriteCapacityUnits: "1"
   S3Bucket:
     Type: 'AWS::S3::Bucket'
     Properties:
