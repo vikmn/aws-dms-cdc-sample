@@ -204,7 +204,7 @@ Resources:
       Password: !Ref MasterUserPassword
       ServerName: !Sub '${SQLDatabase.Endpoint.Address}'
       Port: 1433
-      DatabaseName: tariffs
+      DatabaseName: CustomerDB
     DependsOn:
       - SQLDatabase
   myDynamoDBTable: 
@@ -212,26 +212,29 @@ Resources:
     Properties: 
       AttributeDefinitions: 
         - 
-          AttributeName: "RegionID"
+          AttributeName: "Id"
           AttributeType: "N"
       KeySchema: 
         - 
-          AttributeName: "RegionID"
+          AttributeName: "Id"
           KeyType: "HASH"
       ProvisionedThroughput: 
         ReadCapacityUnits: "1"
         WriteCapacityUnits: "1"
-      TableName: "tblRegions"
+      TableName: "CustomerInformation"
       GlobalSecondaryIndexes: 
         - 
           IndexName: "myGSI"
           KeySchema: 
             - 
-              AttributeName: "RegionID"
+              AttributeName: "Id"
               KeyType: "HASH"
           Projection: 
             NonKeyAttributes: 
-              - "RegionName"
+              - "Name"
+              - "Balance"
+              - "Phone"
+              - "IsActive"
             ProjectionType: "INCLUDE"
           ProvisionedThroughput:
             ReadCapacityUnits: "1"
@@ -284,9 +287,9 @@ Resources:
       SourceEndpointArn: !Ref DMSEndpoint
       TableMappings: >-
         {"rules": [{"rule-type": "selection", "rule-id": "1", "rule-action":
-        "include", "object-locator": {"schema-name": "%", "table-name": "tblRegions"},
+        "include", "object-locator": {"schema-name": "%", "table-name": "CustomerInformation"},
         "rule-name": "1"},{"rule-type": "object-mapping", "rule-id": "2", "rule-action":
-        "map-record-to-record", "target-table-name": "tblRegions","object-locator": {"schema-name": "dbo", "table-name": "tblRegions"},
+        "map-record-to-record", "target-table-name": "CustomerInformation","object-locator": {"schema-name": "dbo", "table-name": "CustomerInformation"},
         "rule-name": "TransformToDDB"}]}
       TargetEndpointArn: !Ref DMSEndpointDDB
 Outputs:
