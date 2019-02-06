@@ -251,11 +251,11 @@ Resources:
           ProvisionedThroughput:
             ReadCapacityUnits: "1"
             WriteCapacityUnits: "1"
-  S3Bucket:
-    Type: 'AWS::S3::Bucket'
-    Properties:
-      AccessControl: BucketOwnerFullControl
-      BucketName: !Ref TargetS3BucketName
+  # S3Bucket:
+  #   Type: 'AWS::S3::Bucket'
+  #   Properties:
+  #     AccessControl: BucketOwnerFullControl
+  #     BucketName: !Ref TargetS3BucketName
   DMSEndpointDDB:
     Type: 'AWS::DMS::Endpoint'
     Properties:
@@ -267,30 +267,30 @@ Resources:
           - Arn
     DependsOn:
       - myDynamoDBTable
-  DMSEndpointS3:
-    Type: 'AWS::DMS::Endpoint'
-    Properties:
-      EndpointType: target
-      EngineName: S3
-      ExtraConnectionAttributes: 'maxfilesize=102400'
-      S3Settings:
-        BucketName: !Ref TargetS3BucketName
-        ServiceAccessRoleArn: !GetAtt
-          - DMSExecutionRole
-          - Arn
-    DependsOn:
-      - S3Bucket
-  DMSTaskMigration:
-    Type: 'AWS::DMS::ReplicationTask'
-    Properties:
-      MigrationType: full-load-and-cdc
-      ReplicationInstanceArn: !Ref DMSReplicationInstance
-      SourceEndpointArn: !Ref DMSEndpoint
-      TableMappings: >-
-        {"rules": [{"rule-type": "selection", "rule-id": "1", "rule-action":
-        "include", "object-locator": {"schema-name": "%", "table-name": "%"},
-        "rule-name": "1"}]}
-      TargetEndpointArn: !Ref DMSEndpointS3
+  # DMSEndpointS3:
+  #   Type: 'AWS::DMS::Endpoint'
+  #   Properties:
+  #     EndpointType: target
+  #     EngineName: S3
+  #     ExtraConnectionAttributes: 'maxfilesize=102400'
+  #     S3Settings:
+  #       BucketName: !Ref TargetS3BucketName
+  #       ServiceAccessRoleArn: !GetAtt
+  #         - DMSExecutionRole
+  #         - Arn
+  #   DependsOn:
+  #     - S3Bucket
+  # DMSTaskMigration:
+  #   Type: 'AWS::DMS::ReplicationTask'
+  #   Properties:
+  #     MigrationType: full-load-and-cdc
+  #     ReplicationInstanceArn: !Ref DMSReplicationInstance
+  #     SourceEndpointArn: !Ref DMSEndpoint
+  #     TableMappings: >-
+  #       {"rules": [{"rule-type": "selection", "rule-id": "1", "rule-action":
+  #       "include", "object-locator": {"schema-name": "%", "table-name": "%"},
+  #       "rule-name": "1"}]}
+  #     TargetEndpointArn: !Ref DMSEndpointS3
   DynamoDbMigration:
     Type: 'AWS::DMS::ReplicationTask'
     Properties:
@@ -329,9 +329,9 @@ Outputs:
   SQLDatabaseEndpoint:
     Description: Database endpoint
     Value: !Sub '${SQLDatabase.Endpoint.Address}:${SQLDatabase.Endpoint.Port}'
-  S3Bucket:
-    Description: S3 bucket Name
-    Value: !Ref TargetS3BucketName
+  # S3Bucket:
+  #   Description: S3 bucket Name
+  #   Value: !Ref TargetS3BucketName
   DynamoDb:
     Description: dynamo db instance name
     Value: !GetAtt
